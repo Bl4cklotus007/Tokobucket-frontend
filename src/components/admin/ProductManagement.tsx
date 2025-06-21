@@ -40,7 +40,7 @@ const ProductManagement: React.FC = () => {
     description: "",
     price: "",
     original_price: "",
-    category: "wisuda",
+    category: "bucket",
     features: [] as string[],
     is_featured: false,
   });
@@ -87,6 +87,10 @@ const ProductManagement: React.FC = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
+      };
+      reader.onerror = () => {
+        console.error('Error reading file');
+        setImagePreview(null);
       };
       reader.readAsDataURL(file);
     }
@@ -150,7 +154,9 @@ const ProductManagement: React.FC = () => {
       features: product.features,
       is_featured: product.is_featured,
     });
-    setImagePreview(product.image_url);
+    setImagePreview(product.image_url ? 
+      (product.image_url.startsWith('http') ? product.image_url : `${API_BASE_URL}${product.image_url}`) 
+      : null);
     setIsDialogOpen(true);
   };
 
@@ -221,7 +227,7 @@ const ProductManagement: React.FC = () => {
       description: "",
       price: "",
       original_price: "",
-      category: "wisuda",
+      category: "bucket",
       features: [],
       is_featured: false,
     });
@@ -263,9 +269,15 @@ const ProductManagement: React.FC = () => {
           <Card key={product.id} className={`${!product.is_active ? 'opacity-60' : ''}`}>
             <div className="aspect-square overflow-hidden rounded-t-lg">
               <img
-                src={product.image_url || "/placeholder.svg"}
+                src={product.image_url ? 
+                  (product.image_url.startsWith('http') ? product.image_url : `${API_BASE_URL}${product.image_url}`) 
+                  : "/placeholder.svg"}
                 alt={product.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/placeholder.svg";
+                }}
               />
             </div>
             <CardContent className="p-4">
@@ -282,7 +294,7 @@ const ProductManagement: React.FC = () => {
               </p>
 
               <div className="flex items-center gap-2 mb-3">
-                <Badge variant={product.category === "wisuda" ? "default" : "secondary"}>
+                <Badge variant={product.category === "bucket" ? "default" : "secondary"}>
                   {product.category}
                 </Badge>
                 {product.is_featured && (
@@ -373,7 +385,7 @@ const ProductManagement: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="wisuda">Bucket Wisuda</SelectItem>
+                    <SelectItem value="bucket">Bucket</SelectItem>
                     <SelectItem value="balon">Dekorasi Balon</SelectItem>
                     <SelectItem value="pernikahan">Dekorasi Pernikahan</SelectItem>
                   </SelectContent>
@@ -432,6 +444,10 @@ const ProductManagement: React.FC = () => {
                     src={imagePreview}
                     alt="Preview"
                     className="w-32 h-32 object-cover rounded"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
                   />
                 </div>
               )}

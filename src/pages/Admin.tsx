@@ -168,7 +168,7 @@ const Admin: React.FC = () => {
                       <CardContent>
                         <div className="text-2xl font-bold">{dashboard.testimonials.total_testimonials}</div>
                         <p className="text-xs text-muted-foreground">
-                          Rating: {dashboard.testimonials.average_rating?.toFixed(1)}/5
+                          Rating: {typeof dashboard.testimonials.average_rating === 'number' ? dashboard.testimonials.average_rating.toFixed(1) : '0.0'}/5
                         </p>
                       </CardContent>
                     </Card>
