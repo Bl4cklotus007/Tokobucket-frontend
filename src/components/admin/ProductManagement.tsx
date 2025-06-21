@@ -107,7 +107,12 @@ const ProductManagement: React.FC = () => {
       formDataToSend.append("description", formData.description);
       formDataToSend.append("price", formData.price);
       formDataToSend.append("original_price", formData.original_price);
-      formDataToSend.append("category", formData.category);
+      
+      // Only send category if it's not empty
+      if (formData.category && formData.category.trim() !== "") {
+        formDataToSend.append("category", formData.category);
+      }
+      
       formDataToSend.append("is_featured", formData.is_featured.toString());
       
       if (selectedImage) {
@@ -150,7 +155,7 @@ const ProductManagement: React.FC = () => {
       description: product.description,
       price: product.price.toString(),
       original_price: product.original_price?.toString() || "",
-      category: product.category,
+      category: product.category || "bucket",
       features: product.features,
       is_featured: product.is_featured,
     });
