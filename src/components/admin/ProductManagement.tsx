@@ -21,12 +21,21 @@ interface Product {
   category: string;
   image_url: string;
   features: string[];
-  is_featured: boolean;
-  is_active: boolean;
+  is_featured: boolean | number;
+  is_active: boolean | number;
   rating: number;
   reviews_count: number;
   created_at: string;
 }
+
+// Category configuration
+const CATEGORIES = {
+  bucket: "Bucket Wisuda",
+  balon: "Dekorasi Balon", 
+  pernikahan: "Dekorasi Pernikahan"
+} as const;
+
+type CategoryKey = keyof typeof CATEGORIES;
 
 const ProductManagement: React.FC = () => {
   const { token } = useAuth();
@@ -35,6 +44,8 @@ const ProductManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [categoryStats, setCategoryStats] = useState<{[key: string]: number}>({});
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -49,11 +60,44 @@ const ProductManagement: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
+    fetchCategoryStats();
   }, []);
+
+  const fetchCategoryStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/products/categories/stats`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const stats: {[key: string]: number} = {};
+        data.data.forEach((stat: any) => {
+          stats[stat.category] = stat.count;
+        });
+        setCategoryStats(stats);
+      }
+    } catch (err) {
+      console.error("Error fetching category stats:", err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/products/admin/all`, {
+      let url = `${API_BASE_URL}/api/products/admin/all`;
+      const params = new URLSearchParams();
+      
+      if (selectedCategory && selectedCategory !== "all") {
+        params.append("category", selectedCategory);
+      }
+      
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -64,13 +108,28 @@ const ProductManagement: React.FC = () => {
       }
 
       const data = await response.json();
-      setProducts(data.data);
+      
+      // Convert is_featured from number to boolean
+      const productsWithBooleanFeatured = data.data.map((product: any) => ({
+        ...product,
+        is_featured: Boolean(product.is_featured),
+        is_active: Boolean(product.is_active)
+      }));
+      
+      setProducts(productsWithBooleanFeatured);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  // Refetch products when category filter changes
+  useEffect(() => {
+    if (!loading) {
+      fetchProducts();
+    }
+  }, [selectedCategory]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -125,23 +184,43 @@ const ProductManagement: React.FC = () => {
       
       const method = editingProduct ? "PUT" : "POST";
 
+      // Set headers for FormData
+      const headers: HeadersInit = {
+        Authorization: `Bearer ${token}`,
+      };
+
       const response = await fetch(url, {
         method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: formDataToSend,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Gagal menyimpan produk");
+        console.error("Server error:", errorData);
+        
+        // Handle validation errors
+        if (errorData.details && Array.isArray(errorData.details)) {
+          const errorMessages = errorData.details.map((err: any) => {
+            const field = err.field || err.path || 'unknown';
+            const message = err.message || err.msg || 'Unknown error';
+            return `${field}: ${message}`;
+          }).join(', ');
+          throw new Error(`Validasi gagal: ${errorMessages}`);
+        }
+        
+        throw new Error(errorData.message || errorData.error || "Gagal menyimpan produk");
       }
+
+      const result = await response.json();
+      console.log("Success:", result);
 
       resetForm();
       setIsDialogOpen(false);
       fetchProducts();
+      fetchCategoryStats();
     } catch (err: any) {
+      console.error("Error in handleSubmit:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -157,7 +236,7 @@ const ProductManagement: React.FC = () => {
       original_price: product.original_price?.toString() || "",
       category: product.category || "bucket",
       features: product.features,
-      is_featured: product.is_featured,
+      is_featured: Boolean(product.is_featured),
     });
     setImagePreview(product.image_url ? 
       (product.image_url.startsWith('http') ? product.image_url : `${API_BASE_URL}${product.image_url}`) 
@@ -181,6 +260,7 @@ const ProductManagement: React.FC = () => {
       }
 
       fetchProducts();
+      fetchCategoryStats();
     } catch (err: any) {
       setError(err.message);
     }
@@ -221,8 +301,35 @@ const ProductManagement: React.FC = () => {
       }
 
       fetchProducts();
+      fetchCategoryStats();
     } catch (err: any) {
       setError(err.message);
+    }
+  };
+
+  const handleCleanupImages = async () => {
+    if (!confirm("Apakah Anda yakin ingin membersihkan gambar yang tidak terpakai? Tindakan ini tidak dapat dibatalkan.")) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/products/cleanup-images`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal membersihkan gambar");
+      }
+
+      const data = await response.json();
+      alert(`Cleanup berhasil! ${data.data.deleted_count} gambar dihapus, ${data.data.error_count} error.`);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -257,10 +364,15 @@ const ProductManagement: React.FC = () => {
           <h2 className="text-2xl font-bold">Manajemen Produk</h2>
           <p className="text-gray-600">Kelola produk bucket wisuda dan dekorasi</p>
         </div>
-        <Button onClick={openNewProductDialog}>
-          <Plus className="w-4 h-4 mr-2" />
-          Tambah Produk
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleCleanupImages} disabled={loading}>
+            {loading ? "Membersihkan..." : "Bersihkan Gambar"}
+          </Button>
+          <Button onClick={openNewProductDialog}>
+            <Plus className="w-4 h-4 mr-2" />
+            Tambah Produk
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -268,6 +380,48 @@ const ProductManagement: React.FC = () => {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      {/* Category Filter */}
+      <div className="flex items-center gap-4">
+        <Label htmlFor="category-filter">Filter Kategori:</Label>
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Kategori</SelectItem>
+            {Object.entries(CATEGORIES).map(([key, name]) => (
+              <SelectItem key={key} value={key}>{name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <span className="text-sm text-gray-500">
+          {products.length} produk ditemukan
+        </span>
+      </div>
+
+      {/* Category Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {Object.entries(CATEGORIES).map(([key, name]) => (
+          <Card key={key} className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">{name}</p>
+                <p className="text-2xl font-bold">{categoryStats[key] || 0}</p>
+              </div>
+              <Badge 
+                variant={
+                  key === "bucket" ? "default" : 
+                  key === "balon" ? "secondary" : 
+                  key === "pernikahan" ? "outline" : "secondary"
+                }
+              >
+                {name}
+              </Badge>
+            </div>
+          </Card>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
@@ -299,8 +453,14 @@ const ProductManagement: React.FC = () => {
               </p>
 
               <div className="flex items-center gap-2 mb-3">
-                <Badge variant={product.category === "bucket" ? "default" : "secondary"}>
-                  {product.category}
+                <Badge 
+                  variant={
+                    product.category === "bucket" ? "default" : 
+                    product.category === "balon" ? "secondary" : 
+                    product.category === "pernikahan" ? "outline" : "secondary"
+                  }
+                >
+                  {CATEGORIES[product.category as CategoryKey] || product.category}
                 </Badge>
                 {product.is_featured && (
                   <Badge variant="outline">Unggulan</Badge>
@@ -390,9 +550,9 @@ const ProductManagement: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bucket">Bucket</SelectItem>
-                    <SelectItem value="balon">Dekorasi Balon</SelectItem>
-                    <SelectItem value="pernikahan">Dekorasi Pernikahan</SelectItem>
+                    {Object.entries(CATEGORIES).map(([key, name]) => (
+                      <SelectItem key={key} value={key}>{name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
