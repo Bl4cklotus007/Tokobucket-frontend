@@ -31,8 +31,8 @@ interface Product {
 // Category configuration
 const CATEGORIES = {
   bucket: "Bucket Wisuda",
-  balon: "Dekorasi Balon", 
-  pernikahan: "Dekorasi Pernikahan"
+  "dekorasi balon": "Dekorasi Balon",
+  "dekorasi pernikahan": "Dekorasi Pernikahan"
 } as const;
 
 type CategoryKey = keyof typeof CATEGORIES;
@@ -412,8 +412,8 @@ const ProductManagement: React.FC = () => {
               <Badge 
                 variant={
                   key === "bucket" ? "default" : 
-                  key === "balon" ? "secondary" : 
-                  key === "pernikahan" ? "outline" : "secondary"
+                  key === "dekorasi balon" ? "secondary" : 
+                  key === "dekorasi pernikahan" ? "outline" : "secondary"
                 }
               >
                 {name}
@@ -456,11 +456,13 @@ const ProductManagement: React.FC = () => {
                 <Badge 
                   variant={
                     product.category === "bucket" ? "default" : 
-                    product.category === "balon" ? "secondary" : 
-                    product.category === "pernikahan" ? "outline" : "secondary"
+                    product.category === "dekorasi balon" ? "secondary" : 
+                    product.category === "dekorasi pernikahan" ? "outline" : "secondary"
                   }
                 >
-                  {CATEGORIES[product.category as CategoryKey] || product.category}
+                  {product.category === "bucket" ? "Bucket" :
+                   product.category === "dekorasi balon" ? "Dekorasi Balon" :
+                   product.category === "dekorasi pernikahan" ? "Dekorasi Pernikahan" : product.category}
                 </Badge>
                 {product.is_featured && (
                   <Badge variant="outline">Unggulan</Badge>

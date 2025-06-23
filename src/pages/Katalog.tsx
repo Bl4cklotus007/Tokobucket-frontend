@@ -34,8 +34,8 @@ const Katalog = () => {
   const categories = [
     { value: "all", label: "Semua Kategori" },
     { value: "bucket", label: "Bucket" },
-    { value: "balon", label: "Balon Dekorasi" },
-    { value: "pernikahan", label: "Dekorasi Pernikahan" },
+    { value: "dekorasi balon", label: "Dekorasi Balon" },
+    { value: "dekorasi pernikahan", label: "Dekorasi Pernikahan" },
   ];
 
   useEffect(() => {
@@ -189,8 +189,8 @@ const Katalog = () => {
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs">
                         {product.category === "bucket" ? "Bucket" :
-                         product.category === "balon" ? "Balon Dekorasi" :
-                         product.category === "pernikahan" ? "Dekorasi Pernikahan" : product.category}
+                         product.category === "dekorasi balon" ? "Dekorasi Balon" :
+                         product.category === "dekorasi pernikahan" ? "Dekorasi Pernikahan" : product.category}
                       </Badge>
                     </div>
                   </CardHeader>

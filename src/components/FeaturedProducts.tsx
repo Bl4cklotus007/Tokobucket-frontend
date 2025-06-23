@@ -8,13 +8,10 @@ const FeaturedProducts = () => {
       id: 1,
       name: "Bucket Wisuda Premium",
       price: "150.000",
-      originalPrice: "200.000",
       rating: 5.0,
       reviews: 45,
       image: "premium-bucket",
       category: "Bucket Wisuda",
-      badge: "Promo Hari Ini",
-      badgeColor: "bg-red-500",
       description: "Bucket bunga mawar premium dengan dekorasi eksklusif",
       features: ["Bunga Segar", "Custom Design", "Gratis Kartu"],
     },
@@ -22,13 +19,10 @@ const FeaturedProducts = () => {
       id: 2,
       name: "Paket Dekorasi Balon",
       price: "299.000",
-      originalPrice: "350.000",
       rating: 4.9,
       reviews: 32,
       image: "balloon-decoration",
       category: "Dekorasi",
-      badge: "Terlaris",
-      badgeColor: "bg-green-500",
       description: "Paket lengkap dekorasi balon untuk acara spesial",
       features: ["Setup Gratis", "Pilihan Warna", "Tahan 8 Jam"],
     },
@@ -36,13 +30,10 @@ const FeaturedProducts = () => {
       id: 3,
       name: "Bucket Mini Love",
       price: "99.000",
-      originalPrice: "120.000",
       rating: 4.8,
       reviews: 67,
       image: "mini-bucket",
       category: "Bucket Wisuda",
-      badge: "Best Seller",
-      badgeColor: "bg-purple-500",
       description: "Bucket mini cantik dengan sentuhan romantis",
       features: ["Ukuran Compact", "Bunga Pilihan", "Harga Terjangkau"],
     },
@@ -61,7 +52,7 @@ const FeaturedProducts = () => {
           </div>
 
           <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
-            Promo Hari Ini
+            Pilihan Terbaik
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Dapatkan penawaran terbaik untuk produk pilihan dengan kualitas
@@ -78,13 +69,6 @@ const FeaturedProducts = () => {
             >
               {/* Product Image */}
               <div className="relative aspect-square bg-gradient-to-br from-pastel-pink/20 to-pastel-purple/20 p-6">
-                {/* Badge */}
-                <div
-                  className={`absolute top-4 left-4 ${product.badgeColor} text-white text-xs font-semibold px-3 py-1 rounded-full z-10`}
-                >
-                  {product.badge}
-                </div>
-
                 {/* Heart Icon */}
                 <button className="absolute top-4 right-4 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all duration-300 z-10">
                   <Heart className="h-5 w-5 text-gray-600 hover:text-red-500 transition-colors duration-300" />
@@ -150,11 +134,6 @@ const FeaturedProducts = () => {
                   <span className="text-2xl font-bold text-graduate-600">
                     Rp {product.price}
                   </span>
-                  {product.originalPrice && (
-                    <span className="text-sm text-gray-500 line-through">
-                      Rp {product.originalPrice}
-                    </span>
-                  )}
                 </div>
 
                 {/* CTA Button */}

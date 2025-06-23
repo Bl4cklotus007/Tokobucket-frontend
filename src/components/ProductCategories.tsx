@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { GraduationCap, Heart, Gift } from "lucide-react";
 
-const ProductCategories = () => {
+const ProductCategories = ({ mode = 'section', className = '' }) => {
   const categories = [
     {
       id: 1,
@@ -34,6 +34,29 @@ const ProductCategories = () => {
       emoji: "💒",
     },
   ];
+
+  if (mode === 'bar') {
+    return (
+      <div className={`w-full flex justify-around items-center bg-white border-t border-gray-200 shadow-lg ${className}`}>
+        {categories.map((category) => {
+          const IconComponent = category.icon;
+
+          return (
+            <Link
+              key={category.id}
+              to={category.href}
+              className="flex items-center justify-center w-full h-16 bg-gradient-to-br from-white to-gray-50 hover:from-graduate-600 hover:to-decoration-600 text-gray-900 font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-white to-gray-50 rounded-full mr-4">
+                <IconComponent className="h-8 w-8 text-gray-900" />
+              </div>
+              <span>{category.name}</span>
+            </Link>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-gray-50">

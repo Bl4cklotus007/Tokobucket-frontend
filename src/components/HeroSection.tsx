@@ -31,14 +31,6 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="text-center lg:text-left">
-            {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-pastel-pink/30">
-              <Star className="h-4 w-4 text-yellow-500" />
-              <span className="text-sm font-medium text-gray-700">
-                Terpercaya & Berkualitas
-              </span>
-            </div>
-
             {/* Main Heading */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 mb-6 leading-tight">
               <span className="bg-gradient-to-r from-graduate-600 to-decoration-600 bg-clip-text text-transparent">
@@ -46,11 +38,6 @@ const HeroSection = () => {
               </span>
               <br />
               <span className="text-gray-800">Eksklusif</span>
-              <br />
-              <span className="text-lg md:text-xl lg:text-2xl font-normal text-gray-600">
-                Mulai dari{" "}
-                <span className="font-bold text-graduate-600">99rb</span>
-              </span>
             </h1>
 
             {/* Description */}
